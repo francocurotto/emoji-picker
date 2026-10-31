@@ -1,0 +1,8 @@
+{
+    "uuid": "emoji-picker@francocurotto",
+    "name": "Emoji Picker",
+    "description": "A searchable grid of every Unicode emoji. Click one to copy it to the clipboard.",
+    "version": "1.1.1",
+    "max-instances": 1,
+    "icon": "face-smile"
+}

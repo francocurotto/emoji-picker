@@ -1,0 +1,75 @@
+/* Semi-transparent greys are used on purpose: they stay visible on both
+   light and dark Cinnamon themes without hard-coding a palette. */
+
+.emoji-picker-box {
+    spacing: 6px;
+    padding: 8px;
+}
+
+.emoji-search-entry {
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.emoji-tabs {
+    spacing: 2px;
+}
+
+.emoji-tab {
+    padding: 3px 2px;
+    border-radius: 6px;
+    border-bottom: 2px solid transparent;
+    text-align: center;
+}
+
+.emoji-tab:hover,
+.emoji-tab:focus {
+    background-color: rgba(128, 128, 128, 0.25);
+}
+
+.emoji-tab-selected {
+    background-color: rgba(128, 128, 128, 0.18);
+    border-bottom: 2px solid rgba(82, 148, 226, 0.9);
+}
+
+.emoji-scroll {
+    padding: 0;
+}
+
+.emoji-row {
+    spacing: 0;
+}
+
+.emoji-button {
+    padding: 0;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.emoji-button:hover,
+.emoji-button:focus {
+    background-color: rgba(128, 128, 128, 0.30);
+}
+
+.emoji-button:active {
+    background-color: rgba(128, 128, 128, 0.45);
+}
+
+.emoji-empty {
+    padding: 24px 8px;
+}
+
+/* Footer. Width is pinned from code; two lines are reserved so the menu does
+   not change height as the hovered emoji changes. No horizontal padding, so
+   the pinned width is exactly the grid width. */
+.emoji-preview {
+    font-size: 10pt;
+    padding: 2px 0;
+    min-height: 34px;
+}
+
+.emoji-variants-title {
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 2px 0 6px 0;
+}

@@ -1,0 +1,157 @@
+// Extra search keywords, layered on top of the official Unicode names.
+//
+// Format:  <emoji> <extra words>
+// The official names in emoji-test.txt are used for search as well; this file
+// only adds synonyms (e.g. "lol" for 😂). Add your own lines freely.
+// Reload Cinnamon (Alt+F2, "r") after editing.
+
+😀 happy
+😆 laugh
+🤣 rofl lol
+😂 laugh lol
+😉 wink
+😊 blush
+😇 angel
+🥰 love
+😍 love
+😋 yum
+🤪 crazy
+🤑 rich
+🤗 hugging hug
+🤭 giggle
+🤫 quiet secret
+🤔 hmm
+🤨 skeptical
+😶 speechless
+😏 smirk
+😬 awkward
+🤥 pinocchio
+😷 sick
+🤒 sick
+🤕 hurt
+🤢 sick
+🥶 freezing
+🥴 drunk
+😵 dizzy
+🤯 mind blown
+🥳 celebrate
+😎 cool
+☹️ sad
+🥺 puppy eyes
+😢 sad
+😭 sob
+😡 angry
+🤬 swearing
+😈 devil
+❤️ love
+💯 perfect
+💥 boom
+💤 sleep
+👋 hello bye
+✋ stop
+✌️ peace
+🤞 luck
+🤘 rock
+👍 like
+👎 dislike
+👊 punch
+👏 applause
+🙌 celebrate
+🤝 deal
+🙏 please thanks pray
+💪 strong
+👀 look
+👄 lips
+🤷 shrug
+🧑‍💻 developer programmer
+👨‍💻 developer programmer
+👩‍💻 developer programmer
+🧑‍🍳 chef
+🧑‍⚕️ doctor
+🧙 wizard
+🧜 mermaid
+🧘 yoga
+🐰 bunny
+🐝 bee
+🐛 caterpillar
+🐞 ladybug
+🦖 dinosaur
+🦕 dinosaur
+🐑 sheep
+🕊️ peace
+🐿️ squirrel
+💐 flowers
+⚡ lightning
+🔥 hot lit
+⛈️ storm
+🌊 ocean
+🍊 orange
+🥑 palta
+🌶️ chili
+🍳 fried egg
+🥩 steak
+🍗 chicken
+🍔 burger
+🍝 pasta
+🍜 ramen noodles
+🍲 stew
+🥟 empanada
+🍮 flan
+🍩 donut
+☕ coffee
+🍵 tea
+🧃 juice
+🍻 cheers
+🥂 cheers
+🥃 whiskey
+🍾 champagne
+⚽ football
+🏓 table tennis
+⛳ golf
+🎯 target
+🎮 controller
+🎲 dice
+🥇 gold
+🥈 silver
+🥉 bronze
+🎭 theater
+🎨 art
+🎬 movie
+🎤 karaoke
+🎹 piano
+🎉 tada
+🎁 present
+🎃 halloween
+🚗 car
+🚲 bike
+🚇 subway
+🛸 ufo
+🏠 home
+🌌 galaxy
+📱 smartphone
+💻 computer
+💾 save
+💿 cd
+📺 tv
+💡 idea
+💎 diamond
+🛠️ tools
+⚙️ settings
+👟 sneaker
+🔔 notification
+✉️ mail
+📦 box
+🏷️ tag
+📝 note
+🗑️ trash
+🔍 search
+🔎 search
+✅ done
+↩️ return
+🔄 refresh
+🏁 race finish
+🏳️‍🌈 pride
+🇺🇸 USA
+🇬🇧 UK
+🇹🇷 Turkey
+🇪🇺 EU

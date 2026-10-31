@@ -1,0 +1,89 @@
+{
+    "columns": {
+        "type": "spinbutton",
+        "default": 8,
+        "min": 7,
+        "max": 14,
+        "step": 1,
+        "description": "Emoji per row"
+    },
+    "visible-rows": {
+        "type": "spinbutton",
+        "default": 7,
+        "min": 3,
+        "max": 14,
+        "step": 1,
+        "description": "Visible rows"
+    },
+    "emoji-size": {
+        "type": "spinbutton",
+        "default": 22,
+        "min": 14,
+        "max": 40,
+        "step": 1,
+        "units": "px",
+        "description": "Emoji size"
+    },
+    "skin-tone": {
+        "type": "combobox",
+        "default": "none",
+        "description": "Preferred skin tone",
+        "tooltip": "Applied to every emoji that has skin-tone variants. Right-click any emoji in the grid to see all of its variants.",
+        "options": {
+            "Default (yellow)": "none",
+            "Light": "1F3FB",
+            "Medium-light": "1F3FC",
+            "Medium": "1F3FD",
+            "Medium-dark": "1F3FE",
+            "Dark": "1F3FF"
+        }
+    },
+    "max-emoji-version": {
+        "type": "combobox",
+        "default": "0",
+        "description": "Hide emoji newer than",
+        "tooltip": "Emoji added to Unicode recently only display if your emoji font is up to date. If some show as empty boxes, pick the version your font supports.",
+        "options": {
+            "Show all": "0",
+            "Emoji 17.0": "17.0",
+            "Emoji 16.0": "16.0",
+            "Emoji 15.1": "15.1",
+            "Emoji 15.0": "15.0",
+            "Emoji 14.0": "14.0",
+            "Emoji 13.1": "13.1",
+            "Emoji 13.0": "13.0",
+            "Emoji 12.1": "12.1",
+            "Emoji 12.0": "12.0",
+            "Emoji 11.0": "11.0"
+        }
+    },
+    "icon-style": {
+        "type": "combobox",
+        "default": "color",
+        "description": "Panel icon",
+        "tooltip": "Colourful is a yellow face that stands out on any panel. Monochrome follows the panel's text colour like the system icons.",
+        "options": {
+            "Colourful (yellow face)": "color",
+            "Monochrome (follows panel theme)": "symbolic"
+        }
+    },
+    "close-on-select": {
+        "type": "switch",
+        "default": true,
+        "description": "Close the picker after copying an emoji"
+    },
+    "notify-on-copy": {
+        "type": "switch",
+        "default": false,
+        "description": "Show a notification when an emoji is copied"
+    },
+    "keybinding": {
+        "type": "keybinding",
+        "default": "<Super>period::",
+        "description": "Keyboard shortcut to open the picker"
+    },
+    "recent": {
+        "type": "generic",
+        "default": []
+    }
+}
