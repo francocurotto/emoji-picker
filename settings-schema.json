@@ -81,9 +81,5 @@
         "type": "keybinding",
         "default": "<Super>period::",
         "description": "Keyboard shortcut to open the picker"
-    },
-    "recent": {
-        "type": "generic",
-        "default": []
     }
 }

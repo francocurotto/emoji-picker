@@ -13,6 +13,7 @@ const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Pango = imports.gi.Pango;
 const Gettext = imports.gettext;
 
@@ -179,6 +180,40 @@ function parseKeywords(text) {
 }
 
 /* ---------------------------------------------------------------------------
+ * "Recently used" storage
+ *
+ * Kept in a file of its own, NOT in the applet's settings. The settings file is
+ * owned by Cinnamon and the settings window; if the applet also rewrote it on
+ * every copy, the two could overwrite each other's changes.
+ * ------------------------------------------------------------------------- */
+
+function recentFilePath() {
+    return GLib.get_user_data_dir() + "/" + UUID + "/recent.json";
+}
+
+function loadRecent() {
+    try {
+        let list = JSON.parse(readTextFile(recentFilePath()));
+        if (Array.isArray(list)) {
+            return list.filter(e => typeof e === "string").slice(0, MAX_RECENT);
+        }
+    } catch (e) {
+        // No file yet, or unreadable: start with an empty list.
+    }
+    return [];
+}
+
+function saveRecent(list) {
+    try {
+        GLib.mkdir_with_parents(GLib.get_user_data_dir() + "/" + UUID, 0o755);
+        Gio.File.new_for_path(recentFilePath()).replace_contents(
+            JSON.stringify(list), null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
+    } catch (e) {
+        global.logError("[" + UUID + "] Could not save recent emoji: " + e);
+    }
+}
+
+/* ---------------------------------------------------------------------------
  * Applet
  * ------------------------------------------------------------------------- */
 
@@ -202,6 +237,7 @@ EmojiPickerApplet.prototype = {
         this._visibleItems = [];
         this._visibleExact = false;
         this._nameByEmoji = {};
+        this._recent = [];
         this._renderSource = 0;
         this._variantsView = false;
         this._hotkeyName = UUID + "-" + this.instance_id;
@@ -213,6 +249,7 @@ EmojiPickerApplet.prototype = {
         this._bindSettings();
         this._updateIcon();
         this._loadData();
+        this._recent = loadRecent();
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -227,17 +264,46 @@ EmojiPickerApplet.prototype = {
 
     _bindSettings: function() {
         this.settings = new Settings.AppletSettings(this, UUID, this.instance_id);
+
+        // BindingDirection.IN: values flow from the settings file to the applet
+        // only. The applet never writes the settings file, so it cannot overwrite
+        // a change made in the settings window.
+        let bind = (key, prop, callback) => {
+            this.settings.bindProperty(Settings.BindingDirection.IN, key, prop, () => {
+                this._logSettings("changed (" + key + ")");
+                if (callback) {
+                    callback();
+                }
+            });
+        };
         let refresh = () => this._onDisplaySettingsChanged();
-        this.settings.bind("columns", "columns", refresh);
-        this.settings.bind("visible-rows", "visibleRows", refresh);
-        this.settings.bind("emoji-size", "emojiSize", refresh);
-        this.settings.bind("skin-tone", "skinTone", refresh);
-        this.settings.bind("max-emoji-version", "maxEmojiVersion", refresh);
-        this.settings.bind("icon-style", "iconStyle", () => this._updateIcon());
-        this.settings.bind("close-on-select", "closeOnSelect");
-        this.settings.bind("notify-on-copy", "notifyOnCopy");
-        this.settings.bind("keybinding", "keybinding", () => this._updateKeybinding());
-        this.settings.bind("recent", "recent");
+
+        bind("columns", "columns", refresh);
+        bind("visible-rows", "visibleRows", refresh);
+        bind("emoji-size", "emojiSize", refresh);
+        bind("skin-tone", "skinTone", refresh);
+        bind("max-emoji-version", "maxEmojiVersion", refresh);
+        bind("icon-style", "iconStyle", () => this._updateIcon());
+        bind("close-on-select", "closeOnSelect");
+        bind("notify-on-copy", "notifyOnCopy");
+        bind("keybinding", "keybinding", () => this._updateKeybinding());
+
+        this._logSettings("loaded");
+    },
+
+    // Writes the values the applet currently holds to the Cinnamon log (Looking
+    // Glass: Alt+F2, "lg", Log tab). If a setting seems to be ignored, this shows
+    // whether the new value ever reached the applet.
+    _logSettings: function(reason) {
+        let values = [
+            ["columns", this.columns], ["visible-rows", this.visibleRows],
+            ["emoji-size", this.emojiSize], ["skin-tone", this.skinTone],
+            ["max-emoji-version", this.maxEmojiVersion], ["icon-style", this.iconStyle],
+            ["close-on-select", this.closeOnSelect], ["notify-on-copy", this.notifyOnCopy],
+            ["keybinding", this.keybinding]
+        ];
+        global.log("[" + UUID + "] settings " + reason + ": " +
+                   values.map(kv => kv[0] + "=" + kv[1]).join(" "));
     },
 
     // "color": a full-colour yellow face that stands out on any panel.
@@ -382,11 +448,20 @@ EmojiPickerApplet.prototype = {
         this.mainBox.add_actor(this.tabBox);
 
         // Scrollable emoji grid
-        this.scroll = new St.ScrollView({ style_class: "emoji-scroll" });
+        //
+        // Buttons scrolled out of view are hidden by the scroll view's clip, but
+        // hidden is not the same as inactive: unless the clip also applies to
+        // pointer hit-testing, they keep receiving hover/click events over the
+        // search box, tabs and footer. clip_to_allocation makes Clutter clip
+        // both painting and picking. It is set on the scroll view and again on a
+        // wrapper, so it still holds if St.ScrollView overrides its own setting.
+        this.scroll = new St.ScrollView({ style_class: "emoji-scroll", clip_to_allocation: true });
         this.scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.gridBox = new St.BoxLayout({ vertical: true });
         this.scroll.add_actor(this.gridBox);
-        this.mainBox.add_actor(this.scroll);
+        this.scrollClip = new St.BoxLayout({ vertical: true, clip_to_allocation: true });
+        this.scrollClip.add_actor(this.scroll);
+        this.mainBox.add_actor(this.scrollClip);
 
         // Footer: name of the hovered emoji / copy confirmation. Its width is pinned
         // to the grid width in _applySizes(); without that, a long name would be the
@@ -444,7 +519,7 @@ EmojiPickerApplet.prototype = {
     },
 
     _defaultTab: function() {
-        let hasRecent = Array.isArray(this.recent) && this.recent.length > 0;
+        let hasRecent = this._recent.length > 0;
         if (hasRecent || this._tabs.length < 2) {
             return 0;
         }
@@ -493,8 +568,7 @@ EmojiPickerApplet.prototype = {
         }
 
         if (tab.recent) {
-            let list = Array.isArray(this.recent) ? this.recent : [];
-            let items = list.map(emoji => ({ emoji: emoji, name: this._nameByEmoji[emoji] || "" }));
+            let items = this._recent.map(emoji => ({ emoji: emoji, name: this._nameByEmoji[emoji] || "" }));
             this._renderItems(items, { empty: _("No recent emoji yet") });
         } else {
             this._renderItems(tab.items.filter(item => this._isAllowed(item)), { empty: "" });
@@ -574,6 +648,25 @@ EmojiPickerApplet.prototype = {
         }
     },
 
+    // True if the mouse pointer is inside the visible part of the emoji grid.
+    // Safety net against buttons that are scrolled out of view still reacting
+    // (see the clip_to_allocation comment in _buildUI). It fails open: if the
+    // geometry cannot be read or looks wrong, the event is allowed through, so
+    // this can only ever suppress events, never break a legitimate click.
+    _pointerInGrid: function() {
+        try {
+            let [px, py] = global.get_pointer();
+            let [x, y] = this.scroll.get_transformed_position();
+            let [w, h] = this.scroll.get_transformed_size();
+            if (!(w > 0 && h > 0)) {
+                return true;
+            }
+            return px >= x && px < x + w && py >= y && py < y + h;
+        } catch (e) {
+            return true;
+        }
+    },
+
     _createEmojiButton: function(item, exact) {
         let shown = exact ? item : this._resolve(item);
         let hasVariants = !exact && !!item.variants && item.variants.length > 0;
@@ -591,6 +684,10 @@ EmojiPickerApplet.prototype = {
         button.set_child(new St.Label({ text: shown.emoji, style: "font-size: " + size + "px;" }));
 
         button.connect("clicked", (actor, mouseButton) => {
+            // mouseButton is 0 for keyboard activation, where the pointer can be anywhere.
+            if (mouseButton > 0 && !this._pointerInGrid()) {
+                return;
+            }
             if (mouseButton === 3) {
                 if (hasVariants) {
                     this._showVariants(item);
@@ -600,7 +697,7 @@ EmojiPickerApplet.prototype = {
             this._copyEmoji(shown);
         });
         button.connect("notify::hover", () => {
-            if (!button.hover) {
+            if (!button.hover || !this._pointerInGrid()) {
                 return;
             }
             let text = shown.name !== "" ? shown.emoji + "  " + shown.name : shown.emoji;
@@ -676,17 +773,17 @@ EmojiPickerApplet.prototype = {
     },
 
     _addRecent: function(emoji) {
-        let list = Array.isArray(this.recent) ? this.recent : [];
-        list = list.filter(e => e !== emoji);
+        let list = this._recent.filter(e => e !== emoji);
         list.unshift(emoji);
-        // Assigning a new array makes the settings layer persist it.
-        this.recent = list.slice(0, MAX_RECENT);
+        this._recent = list.slice(0, MAX_RECENT);
+        saveRecent(this._recent);
     },
 
     _onOpenStateChanged: function(isOpen) {
         if (!isOpen) {
             return;
         }
+        this._applySizes();
         this._selectTab(this._defaultTab());
         this._setPreview(_("Click an emoji to copy it"));
         Mainloop.idle_add(() => {
